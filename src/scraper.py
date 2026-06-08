@@ -17,7 +17,7 @@ from dataclasses import dataclass, asdict
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
-from urllib.parse import urljoin, urlparse
+from urllib.parse import urljoin, urlparse, urldefrag
 import urllib.robotparser
 
 import requests
@@ -142,20 +142,35 @@ class SciPyDocsScraper:
             print(f"Error fetching {url}: {e}")
             return None
 
+    from urllib.parse import urldefrag, urljoin, urlparse
+
     def get_module_function_urls(self, module: str) -> list[str]:
-        """Get all function/class URLs for a SciPy module page."""
-        module_url = f"{self.BASE_URL}generated/scipy.{module}.html"
+        """Get all generated function/class URLs for a SciPy module page."""
+        module_url = f"{self.BASE_URL}{module}.html"
         soup = self.get_page(module_url)
         if not soup:
             return []
 
         urls: list[str] = []
+        seen: set[str] = set()
+
         for link in soup.find_all("a", href=True):
             href = link["href"]
-            if f"scipy.{module}." in href and href.endswith(".html"):
-                full_url = urljoin(module_url, href)
-                if full_url not in urls:
-                    urls.append(full_url)
+
+            # Remove fragments like #scipy.integrate.quad
+            href, _fragment = urldefrag(href)
+
+            full_url = urljoin(module_url, href)
+            path = urlparse(full_url).path
+
+            is_generated_doc = "/generated/" in path
+            is_same_module = f"scipy.{module}." in path
+            is_html = path.endswith(".html")
+
+            if is_generated_doc and is_same_module and is_html and full_url not in seen:
+                seen.add(full_url)
+                urls.append(full_url)
+
         return urls
 
     def _extract_doc_version(self, soup: BeautifulSoup) -> str:
@@ -230,7 +245,8 @@ class SciPyDocsScraper:
         returns = self._extract_section(main_content, ["Returns", "Return"])
         examples = self._extract_section(main_content, ["Examples", "Example"])
 
-        full_text = main_content.get_text(separator="\n", strip=True)
+        # Clean text while preserving code block formatting
+        full_text = self._clean_text_preserve_code(main_content)
 
         doc_type = "function"
         if "class" in title.lower() or signature.startswith("class "):
@@ -255,6 +271,43 @@ class SciPyDocsScraper:
             scipy_doc_version=scipy_doc_version,
         )
 
+    def _clean_text_preserve_code(self, soup: BeautifulSoup) -> str:
+        """
+        Extract text from soup, preserving code block formatting.
+
+        - Code blocks (<pre>, .highlight) keep their original whitespace
+        - Other text gets whitespace normalized
+        """
+        import copy
+        soup_copy = copy.copy(soup)
+
+        # Find all code blocks and replace with placeholders
+        code_blocks = []
+        for i, code_elem in enumerate(soup_copy.find_all(['pre', 'div'], class_=lambda c: c and ('highlight' in c if isinstance(c, str) else any('highlight' in cls for cls in c)))):
+            # Preserve original formatting in code blocks
+            code_text = code_elem.get_text()
+            code_blocks.append(code_text)
+            placeholder = f"__CODE_BLOCK_{i}__"
+            code_elem.replace_with(placeholder)
+
+        # Also handle <pre> tags not caught above
+        for i, pre in enumerate(soup_copy.find_all('pre'), start=len(code_blocks)):
+            code_text = pre.get_text()
+            code_blocks.append(code_text)
+            placeholder = f"__CODE_BLOCK_{i}__"
+            pre.replace_with(placeholder)
+
+        # Extract remaining text with whitespace normalization
+        text = soup_copy.get_text(separator=" ", strip=True)
+        text = re.sub(r'\s+', ' ', text)
+
+        # Restore code blocks
+        for i, code in enumerate(code_blocks):
+            placeholder = f"__CODE_BLOCK_{i}__"
+            text = text.replace(placeholder, f"\n```\n{code}\n```\n")
+
+        return text.strip()
+
     def _extract_section(self, soup: BeautifulSoup, headers: list[str]) -> str:
         """Extract a named section from Sphinx docs (best effort)."""
         for header in headers:
@@ -264,14 +317,19 @@ class SciPyDocsScraper:
                 for sibling in section.find_next_siblings():
                     if sibling.name == "p" and "rubric" in (sibling.get("class", []) or []):
                         break
-                    content.append(sibling.get_text(strip=True))
+                    # Preserve code formatting in sections
+                    if sibling.name == "pre" or (sibling.get("class") and any("highlight" in c for c in sibling.get("class", []))):
+                        content.append(sibling.get_text())
+                    else:
+                        text = sibling.get_text(separator=" ", strip=True)
+                        content.append(re.sub(r'\s+', ' ', text))
                 return "\n".join(content)
 
             dt = soup.find("dt", string=re.compile(f"^{header}", re.I))
             if dt:
                 dd = dt.find_next_sibling("dd")
                 if dd:
-                    return dd.get_text(strip=True)
+                    return self._clean_text_preserve_code(dd)
 
         return ""
 
@@ -297,7 +355,6 @@ class SciPyDocsScraper:
             self.save_documents(docs, f"scipy_{module}.json")
 
         self.save_documents(all_documents, "scipy_all.json")
-        print(f"\nTotal documents scraped: {len(all_documents)}")
         return all_documents
 
     def save_documents(self, documents: list[ScrapedDocument], filename: str) -> None:
@@ -316,9 +373,6 @@ class SciPyDocsScraper:
 def create_sample_dataset() -> list[dict]:
     """
     Create a sample dataset for workshop/testing without scraping.
-
-    Note: Avoid legacy APIs in examples. In SciPy docs, interp1d is marked legacy,
-    so this sample uses CubicSpline instead.
     """
     return [
         {

@@ -1,8 +1,7 @@
 """
-SciPy RAG Workshop - Source Package
+SciPy RAG Workshop Source Package
 
-This package contains the core components for building a RAG system
-for SciPy code generation.
+This package contains the core components for building a RAG system for SciPy code generation.
 
 Components:
 - scraper: Web scraping utilities for SciPy documentation
