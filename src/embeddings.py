@@ -61,21 +61,20 @@ class OpenAIEmbeddings(EmbeddingProvider):
         self.client = OpenAI(api_key=api_key or os.getenv("OPENAI_API_KEY"))
         self._dimension = self.DIMENSIONS.get(model, 1536)
 
-def _with_retries(self, fn, max_retries: int = 3):
-    """
-    Execute a callable with simple exponential backoff.
+    def _with_retries(self, fn, max_retries: int = 3):
+        """
+        Execute a callable with simple exponential backoff.
 
-    Keeps workshop runs smooth on transient 429/5xx/network errors.
-    """
-    for attempt in range(max_retries):
-        try:
-            return fn()
-        except Exception:
-            # Best-effort retry. Keep it simple for workshop material.
-            if attempt == max_retries - 1:
-                raise
-            time.sleep(0.5 * (2 ** attempt))
-
+        Keeps workshop runs smooth on transient 429/5xx/network errors.
+        """
+        for attempt in range(max_retries):
+            try:
+                return fn()
+            except Exception:
+                # Best-effort retry. Keep it simple for workshop material.
+                if attempt == max_retries - 1:
+                    raise
+                time.sleep(0.5 * (2 ** attempt))
 
     def embed(self, text: str) -> list[float]:
         """Generate embedding for a single text."""

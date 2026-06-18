@@ -155,8 +155,10 @@ class Retriever:
             for func_name in seen_functions:
                 example_results = self.vector_store.get_by_metadata(
                     where={
-                        "function_name": func_name,
-                        "chunk_type": "examples"
+                        "$and": [
+                            {"function_name": func_name},
+                            {"chunk_type": "examples"}
+                        ]
                     }
                 )
                 results.extend(example_results)
