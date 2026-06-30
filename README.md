@@ -8,7 +8,9 @@ A comprehensive workshop teaching RAG (Retrieval-Augmented Generation) fundament
 
 **What You'll Build:** A RAG-powered assistant that generates accurate SciPy code using up-to-date documentation
 
-**Duration:** 6-8 hours (4 modules + 1 bonus)
+### ⚠️ Ollama vs Closed Source Models
+
+If you have an OpenAI or Claude API key that you'd like to use for this workshop, Ollama is optional. **However,** if you don't have a proprietary API key, you are required to download Ollama beforehand. This ensures that you're able to follow along. Ollama is an open-source alternative and allows users to work with various open-source models. The two models we'll be using are `llama3.2` for the LLM and `nomic-embed-text` for embeddings.
 
 ## Learning Outcomes
 
@@ -17,7 +19,7 @@ By completing this workshop, you will:
 - Understand RAG architecture and why it solves LLM limitations
 - Build a document processing pipeline (scraping, chunking, embedding)
 - Implement retrieval with ChromaDB vector database
-- Create generation pipelines with OpenAI and Ollama
+- Create generation pipelines with OpenAI and/or Ollama
 - Evaluate RAG system quality
 - Deploy a Gradio web application
 
@@ -29,7 +31,6 @@ By completing this workshop, you will:
 | 2      | Building the SciPy Knowledge Base | 1.5-2 hrs |
 | 3      | RAG Pipeline & Generation         | 1.5-2 hrs |
 | 4      | Evaluation & Capstone App         | 1.5-2 hrs |
-| Bonus  | Advanced RAG Techniques           | 1-1.5 hrs |
 
 Each module is **self-contained** and can be completed independently.
 
@@ -97,7 +98,6 @@ scipy_rag/
 │   ├── 02_scipy_knowledge_base.ipynb  # Module 2: Scraping & chunking
 │   ├── 03_rag_pipeline.ipynb          # Module 3: Retrieval & generation
 │   ├── 04_evaluation.ipynb            # Module 4: Evaluation & app
-│   └── 05_advanced_rag.ipynb          # Bonus: Advanced techniques
 ├── src/
 │   ├── scraper.py          # SciPy docs scraper
 │   ├── chunker.py          # Document chunking utilities

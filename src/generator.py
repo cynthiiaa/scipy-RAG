@@ -3,9 +3,8 @@ LLM Generation Module
 
 Workshop-friendly wrapper for generating responses with:
 - OpenAI (Responses API)
+- Claude (Anthropic)
 - Ollama (local models)
-
-This module intentionally stays lightweight and readable.
 """
 
 from __future__ import annotations
@@ -16,6 +15,14 @@ from dataclasses import dataclass
 from typing import Generator, Optional
 
 from openai import OpenAI
+
+from errors import (
+    require_openai_key,
+    require_anthropic_key,
+    import_anthropic,
+    import_ollama,
+    handle_ollama_error,
+)
 
 
 @dataclass
@@ -39,7 +46,6 @@ class LLMProvider(ABC):
         system_prompt: Optional[str] = None,
         temperature: float = 0.3,
         max_tokens: int = 1000,
-        **kwargs,
     ) -> GenerationResult:
         """Generate a complete response."""
         raise NotImplementedError
@@ -51,24 +57,18 @@ class LLMProvider(ABC):
         system_prompt: Optional[str] = None,
         temperature: float = 0.3,
         max_tokens: int = 1000,
-        **kwargs,
     ) -> Generator[str, None, None]:
         """Stream a response as incremental text deltas."""
         raise NotImplementedError
 
 
 class OpenAIGenerator(LLMProvider):
-    """
-    OpenAI provider using the Responses API.
-
-    Notes:
-    - `system_prompt` is passed via `instructions`.
-    - `max_tokens` maps to `max_output_tokens`.
-    """
+    """OpenAI provider using the Responses API."""
 
     def __init__(self, model: str = "gpt-4o-mini", api_key: Optional[str] = None):
         self.model = model
-        self.client = OpenAI(api_key=api_key or os.getenv("OPENAI_API_KEY"))
+        api_key = require_openai_key(api_key)
+        self.client = OpenAI(api_key=api_key)
 
     def generate(
         self,
@@ -76,7 +76,6 @@ class OpenAIGenerator(LLMProvider):
         system_prompt: Optional[str] = None,
         temperature: float = 0.3,
         max_tokens: int = 1000,
-        **kwargs,
     ) -> GenerationResult:
         response = self.client.responses.create(
             model=self.model,
@@ -84,7 +83,6 @@ class OpenAIGenerator(LLMProvider):
             input=[{"role": "user", "content": prompt}],
             temperature=temperature,
             max_output_tokens=max_tokens,
-            **kwargs,
         )
 
         usage = getattr(response, "usage", None)
@@ -97,7 +95,6 @@ class OpenAIGenerator(LLMProvider):
             provider="openai",
             prompt_tokens=prompt_tokens,
             completion_tokens=completion_tokens,
-            # Responses API uses statuses like "completed" / "incomplete"
             finish_reason=getattr(response, "status", None),
         )
 
@@ -107,7 +104,6 @@ class OpenAIGenerator(LLMProvider):
         system_prompt: Optional[str] = None,
         temperature: float = 0.3,
         max_tokens: int = 1000,
-        **kwargs,
     ) -> Generator[str, None, None]:
         stream = self.client.responses.create(
             model=self.model,
@@ -116,11 +112,9 @@ class OpenAIGenerator(LLMProvider):
             temperature=temperature,
             max_output_tokens=max_tokens,
             stream=True,
-            **kwargs,
         )
 
         for event in stream:
-            # The SDK yields a sequence of events; the most useful ones are deltas.
             if getattr(event, "type", None) == "response.output_text.delta":
                 delta = getattr(event, "delta", None)
                 if delta:
@@ -128,17 +122,11 @@ class OpenAIGenerator(LLMProvider):
 
 
 class OllamaGenerator(LLMProvider):
-    """
-    Ollama provider for local generation.
-
-    Requires: `pip install ollama` and a local Ollama server.
-    """
+    """Ollama provider for local generation."""
 
     def __init__(self, model: str = "llama3.2", host: Optional[str] = None):
-        import ollama  # local import keeps dependency optional
-
-        self._ollama = ollama
         self.model = model
+        self._ollama = import_ollama(model)
 
         if host:
             os.environ["OLLAMA_HOST"] = host
@@ -149,18 +137,20 @@ class OllamaGenerator(LLMProvider):
         system_prompt: Optional[str] = None,
         temperature: float = 0.3,
         max_tokens: int = 1000,
-        **kwargs,
     ) -> GenerationResult:
         messages = []
         if system_prompt:
             messages.append({"role": "system", "content": system_prompt})
         messages.append({"role": "user", "content": prompt})
 
-        response = self._ollama.chat(
-            model=self.model,
-            messages=messages,
-            options={"temperature": temperature, "num_predict": max_tokens},
-        )
+        try:
+            response = self._ollama.chat(
+                model=self.model,
+                messages=messages,
+                options={"temperature": temperature, "num_predict": max_tokens},
+            )
+        except Exception as e:
+            handle_ollama_error(e, self.model)
 
         # Ollama returns ChatResponse objects (or dicts in older versions)
         if isinstance(response, dict):
@@ -168,7 +158,6 @@ class OllamaGenerator(LLMProvider):
             prompt_tokens = int(response.get("prompt_eval_count", 0) or 0)
             completion_tokens = int(response.get("eval_count", 0) or 0)
         else:
-            # Newer ollama library returns objects with attributes
             text = getattr(response.message, "content", "") if hasattr(response, "message") else ""
             prompt_tokens = int(getattr(response, "prompt_eval_count", 0) or 0)
             completion_tokens = int(getattr(response, "eval_count", 0) or 0)
@@ -188,7 +177,6 @@ class OllamaGenerator(LLMProvider):
         system_prompt: Optional[str] = None,
         temperature: float = 0.3,
         max_tokens: int = 1000,
-        **kwargs,
     ) -> Generator[str, None, None]:
         messages = []
         if system_prompt:
@@ -206,25 +194,72 @@ class OllamaGenerator(LLMProvider):
             if isinstance(chunk, dict):
                 piece = chunk.get("message", {}).get("content", "")
             else:
-                # Newer ollama library returns objects
                 piece = getattr(chunk.message, "content", "") if hasattr(chunk, "message") else ""
             if piece:
                 yield piece
 
 
-def get_llm_provider(provider: str = "openai", model: Optional[str] = None, **kwargs) -> LLMProvider:
-    """
-    Factory to get an LLM provider.
+class ClaudeGenerator(LLMProvider):
+    """Anthropic Claude provider."""
 
-    Args:
-        provider: "openai" or "ollama"
-        model: model name for the selected provider
-        **kwargs: provider-specific args (e.g. api_key for OpenAI, host for Ollama)
-    """
+    def __init__(self, model: str = "claude-sonnet-4-20250514", api_key: Optional[str] = None):
+        self.model = model
+        anthropic = import_anthropic()
+        api_key = require_anthropic_key(api_key)
+        self.client = anthropic.Anthropic(api_key=api_key)
+
+    def generate(
+        self,
+        prompt: str,
+        system_prompt: Optional[str] = None,
+        temperature: float = 0.3,
+        max_tokens: int = 1000,
+    ) -> GenerationResult:
+        message = self.client.messages.create(
+            model=self.model,
+            max_tokens=max_tokens,
+            temperature=temperature,
+            system=system_prompt or "",
+            messages=[{"role": "user", "content": prompt}],
+        )
+
+        text = "".join(block.text for block in message.content if hasattr(block, "text"))
+
+        return GenerationResult(
+            text=text,
+            model=self.model,
+            provider="claude",
+            prompt_tokens=message.usage.input_tokens,
+            completion_tokens=message.usage.output_tokens,
+            finish_reason=message.stop_reason,
+        )
+
+    def generate_stream(
+        self,
+        prompt: str,
+        system_prompt: Optional[str] = None,
+        temperature: float = 0.3,
+        max_tokens: int = 1000,
+    ) -> Generator[str, None, None]:
+        with self.client.messages.stream(
+            model=self.model,
+            max_tokens=max_tokens,
+            temperature=temperature,
+            system=system_prompt or "",
+            messages=[{"role": "user", "content": prompt}],
+        ) as stream:
+            for text in stream.text_stream:
+                yield text
+
+
+def get_llm_provider(provider: str = "openai", model: Optional[str] = None, **kwargs) -> LLMProvider:
+    """Factory to get an LLM provider ('openai', 'claude', or 'ollama')."""
     provider_lower = (provider or "openai").lower()
 
     if provider_lower == "openai":
         return OpenAIGenerator(model=model or "gpt-4o-mini", **kwargs)
+    if provider_lower in ("claude", "anthropic"):
+        return ClaudeGenerator(model=model or "claude-sonnet-4-20250514", **kwargs)
     if provider_lower == "ollama":
         return OllamaGenerator(model=model or "llama3.2", **kwargs)
 
@@ -269,7 +304,9 @@ def create_scipy_prompt(question: str, context: str) -> tuple[str, str]:
 
 
 if __name__ == "__main__":
-    # Minimal smoke test (requires OPENAI_API_KEY for OpenAI; Ollama optional)
+    from dotenv import load_dotenv
+    load_dotenv()
+
     try:
         openai_gen = OpenAIGenerator()
         system, user = create_scipy_prompt(
@@ -277,16 +314,13 @@ if __name__ == "__main__":
             context="scipy.optimize.minimize(fun, x0) minimizes a scalar function.",
         )
         result = openai_gen.generate(user, system_prompt=system, max_tokens=250)
-        print(f"OpenAI model: {result.model}")
-        print(f"Tokens: {result.prompt_tokens} prompt, {result.completion_tokens} completion")
-        print(result.text[:400])
+        print(f"OpenAI: {result.model}, {result.prompt_tokens}+{result.completion_tokens} tokens")
     except Exception as e:
-        print(f"OpenAI smoke test skipped/failed: {e}")
+        print(f"OpenAI skipped: {e}")
 
     try:
         ollama_gen = OllamaGenerator()
         result = ollama_gen.generate("Say hello in one sentence.", max_tokens=50)
-        print(f"Ollama model: {result.model}")
-        print(result.text)
+        print(f"Ollama: {result.model}, {result.text}")
     except Exception as e:
-        print(f"Ollama smoke test skipped/failed: {e}")
+        print(f"Ollama skipped: {e}")
