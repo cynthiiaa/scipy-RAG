@@ -40,7 +40,7 @@ Each module is **self-contained** and can be completed independently.
 
 ```bash
 # Navigate to the workshop directory
-cd scipy_rag
+cd scipy-RAG
 
 # Create and activate virtual environment
 python -m venv venv
