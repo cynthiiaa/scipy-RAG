@@ -1,0 +1,116 @@
+{
+  "description": "Evaluation dataset for SciPy RAG system",
+  "version": "1.0",
+  "questions": [
+    {
+      "id": "q1",
+      "question": "How do I minimize a function in SciPy?",
+      "expected_functions": ["minimize"],
+      "expected_modules": ["scipy.optimize"],
+      "difficulty": "easy",
+      "tags": ["optimization", "minimize"]
+    },
+    {
+      "id": "q2",
+      "question": "I need to fit an exponential curve to my experimental data. What function should I use?",
+      "expected_functions": ["curve_fit"],
+      "expected_modules": ["scipy.optimize"],
+      "difficulty": "easy",
+      "tags": ["curve fitting", "regression"]
+    },
+    {
+      "id": "q3",
+      "question": "How can I calculate the definite integral of a function from a to b?",
+      "expected_functions": ["quad"],
+      "expected_modules": ["scipy.integrate"],
+      "difficulty": "easy",
+      "tags": ["integration", "calculus"]
+    },
+    {
+      "id": "q4",
+      "question": "I have data points and want to interpolate values between them smoothly. What's the best approach?",
+      "expected_functions": ["interp1d"],
+      "expected_modules": ["scipy.interpolate"],
+      "difficulty": "easy",
+      "tags": ["interpolation"]
+    },
+    {
+      "id": "q5",
+      "question": "How do I solve a system of linear equations Ax = b?",
+      "expected_functions": ["solve"],
+      "expected_modules": ["scipy.linalg"],
+      "difficulty": "easy",
+      "tags": ["linear algebra", "equations"]
+    },
+    {
+      "id": "q6",
+      "question": "I need to compute the FFT of a signal. Which function should I use?",
+      "expected_functions": ["fft"],
+      "expected_modules": ["scipy.fft"],
+      "difficulty": "easy",
+      "tags": ["signal processing", "fourier"]
+    },
+    {
+      "id": "q7",
+      "question": "How do I design a Butterworth lowpass filter?",
+      "expected_functions": ["butter"],
+      "expected_modules": ["scipy.signal"],
+      "difficulty": "medium",
+      "tags": ["signal processing", "filter"]
+    },
+    {
+      "id": "q8",
+      "question": "I want to compute distances between all pairs of points in two arrays. What function is best?",
+      "expected_functions": ["cdist"],
+      "expected_modules": ["scipy.spatial.distance"],
+      "difficulty": "medium",
+      "tags": ["distance", "spatial"]
+    },
+    {
+      "id": "q9",
+      "question": "How do I create a sparse matrix efficiently for a large dataset with mostly zeros?",
+      "expected_functions": ["csr_matrix"],
+      "expected_modules": ["scipy.sparse"],
+      "difficulty": "medium",
+      "tags": ["sparse", "matrix"]
+    },
+    {
+      "id": "q10",
+      "question": "I need to fit a normal distribution to my data and get the mean and standard deviation.",
+      "expected_functions": ["norm"],
+      "expected_modules": ["scipy.stats"],
+      "difficulty": "easy",
+      "tags": ["statistics", "distribution"]
+    },
+    {
+      "id": "q11",
+      "question": "How can I minimize a function with bounds on the variables?",
+      "expected_functions": ["minimize"],
+      "expected_modules": ["scipy.optimize"],
+      "difficulty": "medium",
+      "tags": ["optimization", "bounds"],
+      "expected_keywords": ["bounds", "L-BFGS-B"]
+    },
+    {
+      "id": "q12",
+      "question": "I need to perform numerical integration over an infinite interval.",
+      "expected_functions": ["quad"],
+      "expected_modules": ["scipy.integrate"],
+      "difficulty": "medium",
+      "tags": ["integration", "infinite"],
+      "expected_keywords": ["inf", "infinity"]
+    }
+  ],
+  "reference_answers": {
+    "q1": "Use scipy.optimize.minimize() with your objective function and initial guess. Example: result = minimize(fun, x0, method='BFGS')",
+    "q2": "Use scipy.optimize.curve_fit() to fit any function to data using non-linear least squares. Define your model function and pass your x and y data.",
+    "q3": "Use scipy.integrate.quad(func, a, b) to compute definite integrals numerically. It returns both the result and an error estimate.",
+    "q4": "Use scipy.interpolate.interp1d(x, y, kind='cubic') to create an interpolation function. The 'kind' parameter controls smoothness.",
+    "q5": "Use scipy.linalg.solve(A, b) to solve the linear system. It's more efficient than computing the inverse.",
+    "q6": "Use scipy.fft.fft(x) to compute the discrete Fourier transform. Use fftfreq() to get the corresponding frequencies.",
+    "q7": "Use scipy.signal.butter(N, Wn, btype='low') to design the filter, then apply it with sosfilt() for numerical stability.",
+    "q8": "Use scipy.spatial.distance.cdist(XA, XB, metric='euclidean') to compute pairwise distances efficiently.",
+    "q9": "Use scipy.sparse.csr_matrix() for efficient row slicing, or csc_matrix() for column operations. CSR is generally best for matrix-vector products.",
+    "q10": "Use scipy.stats.norm.fit(data) to estimate parameters, or create a distribution with norm(loc=mean, scale=std)."
+  }
+}
