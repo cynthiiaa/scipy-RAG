@@ -64,13 +64,13 @@ cp .env.example .env
 
 ```bash
 # Install Ollama (macOS)
-brew install ollama
+https://ollama.com/download/mac
 
-# Another way to install Ollama (macOS)
-curl -fsSL https://ollama.com/install.sh | sh
+# Install Ollama (Windows)
+https://ollama.com/download/windows
 
-# Link to download
-https://ollama.com/download
+# Install Ollama (Linux)
+https://ollama.com/download/linux
 
 # Start Ollama server
 ollama serve
@@ -88,34 +88,6 @@ jupyter notebook notebooks/
 ```
 
 Start with `01_rag_fundamentals.ipynb` and proceed in order.
-
-## Project Structure
-
-```
-scipy_rag/
-├── notebooks/
-│   ├── 01_rag_fundamentals.ipynb      # Module 1: RAG basics
-│   ├── 02_scipy_knowledge_base.ipynb  # Module 2: Scraping & chunking
-│   ├── 03_rag_pipeline.ipynb          # Module 3: Retrieval & generation
-│   ├── 04_evaluation.ipynb            # Module 4: Evaluation & app
-├── src/
-│   ├── scraper.py          # SciPy docs scraper
-│   ├── chunker.py          # Document chunking utilities
-│   ├── embeddings.py       # Embedding providers
-│   ├── vectorstore.py      # ChromaDB wrapper
-│   ├── retriever.py        # Retrieval logic
-│   ├── generator.py        # LLM generation
-│   └── rag.py              # Main RAG pipeline
-├── data/
-│   ├── raw/                # Scraped HTML (generated)
-│   └── processed/          # Chunked documents
-├── chroma_db/              # Vector store (generated)
-├── evaluation/
-│   └── test_questions.json # Evaluation dataset
-├── app.py                  # Gradio web application
-├── requirements.txt
-└── .env.example
-```
 
 ## Module Descriptions
 
@@ -282,8 +254,6 @@ provider = get_embedding_provider("ollama", model="mxbai-embed-large")
 - [Ollama](https://ollama.com)
 - [Gradio Documentation](https://gradio.app/docs)
 
-## License
-
-MIT License - Feel free to use this workshop material for learning and teaching.
+---
 
 Built for the SciPy RAG Workshop | Happy Coding 💻
