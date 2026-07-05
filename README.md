@@ -1,6 +1,14 @@
 # SciPy RAG Workshop
 
-A comprehensive workshop teaching RAG (Retrieval-Augmented Generation) fundamentals and current practices, culminating in a SciPy code generation assistant.
+A comprehensive workshop teaching RAG (Retrieval-Augmented Generation) fundamentals and current practices, resulting in a SciPy code generation assistant.
+
+## About the Author
+
+**Cynthia Ukawu**, Lead Machine Learning Engineer
+
+This repository (including the AI architecture, core functionality, and structured workshop curriculum) was solely designed and developed by Cynthia.
+
+🔗 Read more technical deep-dives on AI/ML at [cynscode.com](https://cynscode.com).
 
 ## Workshop Overview
 
