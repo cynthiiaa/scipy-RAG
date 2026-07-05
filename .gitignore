@@ -46,5 +46,7 @@ Thumbs.db
 # Logs
 *.log
 
-!src/outdated
-docs/
+src/outdated
+docs/*
+!docs/images
+!docs/module1_slides.md

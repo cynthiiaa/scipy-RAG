@@ -4,9 +4,13 @@ A comprehensive workshop teaching RAG (Retrieval-Augmented Generation) fundament
 
 ## About the Author
 
-**Cynthia Ukawu**, Lead Machine Learning Engineer
+**Cynthia Ukawu** | Lead Machine Learning Engineer
 
-This repository (including the AI architecture, core functionality, and structured workshop curriculum) was solely designed and developed by Cynthia.
+Cynthia independently designed and developed this project, including:
+
+- The AI infrastructure and core functionality
+- The structured workshop curriculum
+- The supporting technical documentation
 
 🔗 Read more technical deep-dives on AI/ML at [cynscode.com](https://cynscode.com).
 
