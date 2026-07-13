@@ -37,12 +37,12 @@ By completing this workshop, you will:
 
 ## Workshop Structure
 
-| Module | Topic                             | Duration  |
-| ------ | --------------------------------- | --------- |
-| 1      | RAG Fundamentals & Setup          | 1.5-2 hrs |
-| 2      | Building the SciPy Knowledge Base | 1.5-2 hrs |
-| 3      | RAG Pipeline & Generation         | 1.5-2 hrs |
-| 4      | Evaluation & Capstone App         | 1.5-2 hrs |
+| Module | Topic                             |
+| ------ | --------------------------------- |
+| 1      | RAG Fundamentals & Setup          |
+| 2      | Building the SciPy Knowledge Base |
+| 3      | RAG Pipeline & Generation         |
+| 4      | Evaluation & Capstone App         |
 
 Each module is **self-contained** and can be completed independently.
 
@@ -92,6 +92,17 @@ ollama pull llama3.2
 ollama pull nomic-embed-text
 ```
 
+#### (Optionally Optional) Pull More Models on Ollama
+
+I'd recommend pulling these two additional models before the workshop because it takes a long time to download them 🐢 <br>
+**You'll need at least 16GB of memory available.**
+
+```bash
+ollama pull mistral         # this pulls mistral:7b
+
+ollama pull codellama       # this pulls codellama:7b
+```
+
 ### 4. Start the Workshop
 
 ```bash
@@ -105,69 +116,35 @@ Start with `01_rag_fundamentals.ipynb` and proceed in order.
 
 ### Module 1: RAG Fundamentals & Setup
 
-**Learn:**
+This module explains what RAG is, why it exists, and how embeddings turn text into searchable vectors. You'll set up ChromaDB and build a minimal RAG system from scratch. No frameworks, just the core concepts.
 
-- What RAG is and why it matters
-- Embeddings and vector similarity
-- ChromaDB basics
-
-**Build:**
-
-- Mini RAG system with sample data
-- Embedding visualization
+By the end, you'll have a working prototype that retrieves relevant documents and generates answers.
 
 ### Module 2: Building the SciPy Knowledge Base
 
-**Learn:**
+This module walks through scraping SciPy documentation, cleaning it, and chunking it intelligently. Chunking matters more than most people expect. For example, if you split code in the wrong place this can lead to poor retrieval.
 
-- Web scraping best practices
-- Document chunking strategies
-- Code-aware text processing
-
-**Build:**
-
-- SciPy documentation scraper
-- Production-ready vector store
+You'll populate a ChromaDB collection with embedded SciPy docs, ready for the next module.
 
 ### Module 3: RAG Pipeline & Generation
 
-**Learn:**
+You'll build the full `SciPyRAG` class with:
 
-- Query preprocessing techniques
-- Prompt engineering for code generation
-- Multi-provider LLM integration
+- Query expansion and preprocessing
+- Prompt templates tuned for code generation
+- Support for both OpenAI and Ollama
 
-**Build:**
-
-- Complete `SciPyRAG` class
-- OpenAI + Ollama support
+The module also covers the embedding mismatch problem (why you can't mix embedding models between indexing and querying).
 
 ### Module 4: Evaluation & Capstone App
 
-**Learn:**
+How do you know if your RAG system is any good? This module introduces retrieval metrics (precision, recall, MRR) and generation evaluation approaches.
 
-- Retrieval metrics (precision, recall, MRR)
-- Generation evaluation
-- Production considerations
+You'll build a Gradio web app that ties everything together—a working SciPy assistant you can actually use.
 
-**Build:**
+~~Bonus: Advanced RAG Techniques~~
 
-- Evaluation framework
-- Gradio web application
-
-### Bonus: Advanced RAG Techniques
-
-**Learn:**
-
-- HyDE (Hypothetical Document Embeddings)
-- Query decomposition
-- Hybrid search (dense + sparse)
-- Reranking
-
-**Compare:**
-
-- LangChain implementation
-- LlamaIndex implementation
+~~For those who want to go deeper. Covers HyDE (hypothetical document embeddings), query decomposition, hybrid search, and reranking. Also compares what the same RAG system looks like in LangChain vs LlamaIndex.~~
 
 ## Running the Gradio App
 

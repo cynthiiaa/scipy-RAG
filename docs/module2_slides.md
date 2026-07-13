@@ -25,7 +25,7 @@ math: mathjax
 
 # Module 2: Building the SciPy Knowledge Base
 
-**Prerequisites**: Completed Module 1, basic Python, understanding of embeddings
+**Prerequisites**: basic Python, understanding of embeddings
 
 ---
 
@@ -574,7 +574,7 @@ This is where **retrieval confidence**, **module coverage checks**, **lexical in
 
 ---
 
-## 13. Module 2 Summary
+## Module 2 Summary
 
 ### What We Built
 
