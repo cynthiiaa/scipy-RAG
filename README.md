@@ -103,7 +103,17 @@ ollama pull mistral         # this pulls mistral:7b
 ollama pull codellama       # this pulls codellama:7b
 ```
 
-### 4. Start the Workshop
+### 4. Ensure Your Setup is Correct
+
+⚠️ Make sure your virtual environment is active.
+
+**Run**
+
+```bash
+python3 scripts/check_setup.py
+```
+
+### 5. Start the Workshop
 
 ```bash
 # Launch Jupyter
