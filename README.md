@@ -94,7 +94,7 @@ ollama pull nomic-embed-text
 
 #### (Optionally Optional) Pull More Models on Ollama
 
-I'd recommend pulling these two additional models before the workshop because it takes a long time to download them 🐢 <br>
+I'd recommend pulling these two additional models before the workshop since it takes a long time to download them 🐢 <br>
 **You'll need at least 16GB of memory available.**
 
 ```bash
@@ -212,29 +212,6 @@ store = VectorStore(collection_name="scipy_docs", persist_directory="./chroma_db
 store.reset_collection()
 ```
 
-## Extending the Workshop
-
-**Add more SciPy modules:**
-
-```python
-from scraper import SciPyDocsScraper
-scraper = SciPyDocsScraper()
-docs = scraper.scrape_all(modules=['signal', 'ndimage'])
-```
-
-**Try different embedding models:**
-
-```python
-from embeddings import get_embedding_provider
-provider = get_embedding_provider("ollama", model="mxbai-embed-large")
-```
-
-**Deploy to HuggingFace Spaces:**
-
-1. Create a new Space at huggingface.co
-2. Upload `app.py`, `src/`, and `chroma_db/`
-3. Add your OPENAI_API_KEY as a secret
-
 ## Resources
 
 - [SciPy Documentation](https://docs.scipy.org)
@@ -243,6 +220,5 @@ provider = get_embedding_provider("ollama", model="mxbai-embed-large")
 - [Ollama](https://ollama.com)
 - [Gradio Documentation](https://gradio.app/docs)
 
----
-
-Built for the SciPy RAG Workshop | Happy Coding 💻
+<br>
+Happy Coding 💻

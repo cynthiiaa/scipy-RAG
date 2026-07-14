@@ -50,3 +50,4 @@ src/outdated
 docs/*
 !docs/images
 !docs/module*.md
+!docs/extra_adding_modules.md 
